@@ -40,8 +40,8 @@ class Shape:
             pointBPolarA += zRotation
 
             #Revert back to cartesian coordinates
-            pointAx = center[0] + pointAPolarR * math.cos(math.radians(pointAPolarA))
-            pointAy = center[1] + pointAPolarR * math.sin(math.radians(pointAPolarA))
+            pointAx = Game.worldOrigin.x + center[0] + pointAPolarR * math.cos(math.radians(pointAPolarA))
+            pointAy = Game.worldOrigin.y + center[1] + pointAPolarR * math.sin(math.radians(pointAPolarA))
 
             pointBx = center[0] + pointBPolarR * math.cos(math.radians(pointBPolarA))
             pointBy = center[1] + pointBPolarR * math.sin(math.radians(pointBPolarA))

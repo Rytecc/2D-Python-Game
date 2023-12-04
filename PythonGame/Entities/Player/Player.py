@@ -13,19 +13,28 @@ import Input
 
 class Player(TickedObject):
     def __init__(self, screen, transform:Transform):
+        super().__init__(screen, transform)
         self.movement = Movement(transform, 1.0)
         self.shotPoint = Transform(Vector(0, 0), Vector(0, 0))
         self.rotation = Rotator(transform)
-        cExpression = lambda:Color(0, 255, 0, 255)
+        
+        self.maxHealth = 25.0
+        self.currentHealth = self.maxHealth
+        
+        cExpression = lambda:Color(int(255.0 * (1.0 - self.currentHealth / self.maxHealth)), int(255.0 * (self.currentHealth / self.maxHealth)), 0, 255)
         self.currentShape = Shape("Coolship", cExpression)
         self.shoot = False
-        super().__init__(screen, transform)
+        
+        self.addTag("Player")
 
     def setShotPointTransform(self):
         posVec = self.transform.position + (self.transform.getForward() * 0.5 * Game.unitScale)
         self.shotPoint = posVec
 
     def tick(self, deltaTime):
+        if self.disposed:
+            return
+        
         self.currentShape.drawShape(self.screen, [self.transform.position.x, self.transform.position.y], 2.5, self.transform.zAngle - 90)
         self.movement.tick(deltaTime)
         self.rotation.tick()
@@ -39,3 +48,14 @@ class Player(TickedObject):
             self.shoot = False
 
         return super().tick(deltaTime)
+    
+    def interact(self, args, type: str):
+        if type == "Heal":
+            self.currentHealth += args
+        elif type == "Damage":
+            self.currentHealth -= args
+        
+        if self.currentHealth <= 0:
+            self.dispose()
+        
+        return super().interact(args, type)

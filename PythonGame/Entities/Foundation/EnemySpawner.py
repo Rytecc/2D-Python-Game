@@ -18,7 +18,6 @@ class EnemySpawner(TickedObject):
         
         spawnPosition = Vector(random.randint(0, 500), random.randint(0, 500))
         newEnemy = BasicEnemy(self.screen, Game.plr, Transform(spawnPosition, Vector(1, 1)))
-        newEnemy.addTag("Enemy")
 
         Game.objmngr.InstanceQueue.append(newEnemy)
         self.currentDelay = self.maxDelay

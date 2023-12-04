@@ -3,14 +3,30 @@ from TickedObject import TickedObject
 import Game
 import pygame
 
-def overlapCircle(center:Vector, radius:float) -> list[TickedObject]:
+def overlapCircle(center:Vector, radius:float, filter:str) -> list[TickedObject]:
     entities = list[TickedObject](Game.objectsAlive.values())
     x = entities.__len__() - 1
-    while x >= 0:
+    
+    try:
+        while x >= 0:
+            if entities[x].transform == None:
+                del entities[x]
+                x -= 1
+                continue
+            
+            if (entities[x].transform.position - center).magnitude() > radius:
+                del entities[x]
+                x -= 1
+                continue
+            
+            if filter != None and entities[x].tags.__contains__(filter) == False:
+                del entities[x]
+                x -= 1
+                continue
 
-        if entities[x].transform != None and (entities[x].transform.position - center).magnitude() > radius:
-            del entities[x]
-
-        x -= 1
+            x -= 1
+    except:
+        print(x)
+        raise Exception(f"Index out of range: Attempted i({x}) for L({entities.__len__()})")
 
     return entities

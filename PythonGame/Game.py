@@ -23,6 +23,7 @@ debug = True
 # pygame setup
 pygame.init()
 
+worldOrigin = Vector(0, 0)
 screen = pygame.display.set_mode((800, 800))
 clock = pygame.time.Clock()
 running = True
@@ -42,6 +43,7 @@ dt = 0
 unitScale = 35.0
 unitLength = 0
 time = 0.0
+lastNum = 0
 while running:
     # poll for events
     # pygame.QUIT event means the user clicked X to close your window
@@ -57,6 +59,9 @@ while running:
         objectsAlive[obj].tick(dt)
     
     objmngr.tick(dt)
+    
+    if objectsAlive.__len__() != lastNum:
+        lastNum = objectsAlive.__len__()
     
     # flip() the display to put your work on screen
     pygame.display.flip()

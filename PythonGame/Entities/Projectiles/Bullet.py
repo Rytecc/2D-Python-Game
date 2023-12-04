@@ -9,13 +9,16 @@ from pygame.color import Color
 
 class Bullet(TickedObject):
     def __init__(self, screen, transform:Transform, initPosition:Vector, direction:Vector, speed:float):
+        super().__init__(screen, transform)
+        
         self.initPosition = initPosition
         self.direction = direction
+        
         self.speed = speed * Game.unitLength
         self.screen = screen
+        
         self.shape = Shape("Bullet", lambda:Color(0, 255, 0, 255))
         transform.setPosition(initPosition)
-        return super().__init__(screen, transform)
     
     def tick(self, deltaTime:float):
         self.transform.Translate(self.direction * self.speed * deltaTime)
@@ -26,14 +29,10 @@ class Bullet(TickedObject):
         elif self.transform.position.y >= self.screen.get_height() or self.transform.position.y <= 0:
             self.dispose()
 
-        overlaps = Physics.overlapCircle(self.transform.position, 25.0)
-
-        for overlap in overlaps:
-            if overlap.tags.__contains__("Enemy") == False:
-                continue
-
+        overlaps:list[TickedObject] = Physics.overlapCircle(self.transform.position, 25.0, "Enemy")
+        
+        if overlaps.__len__() > 0:
+            overlaps[0].interact(1.0, "Damage")
             self.dispose()
-            overlap.interact(1.0, "Damage")
-            break
 
         return super().tick(deltaTime)

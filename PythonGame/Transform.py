@@ -24,7 +24,11 @@ class Transform:
 
     def setAngle(self, a):
         self.zAngle = a
-
+    
+    def setForward(self, fwd:Vector):
+        self.forwardVector = fwd.normalize()
+        self.zAngle = math.degrees(math.atan2(self.forwardVector.y, self.forwardVector.x))
+    
     def getForward(self) -> Vector:
         resX = 0.0
         resY = 0.0
@@ -39,3 +43,6 @@ class Transform:
             pygame.draw.line(Game.screen, "green", [self.position.x, self.position.y], [posWithForward.x, posWithForward.y])
 
         return Vector(resX, resY)
+    
+    def copy(self):
+        return Transform(self.position, self.scale)

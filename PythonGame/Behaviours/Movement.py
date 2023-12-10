@@ -10,5 +10,5 @@ class Movement:
         self.speed = speed
 
     def tick(self, deltaTime):
-        moveVec = Vector(Input.getHorizontal(), -Input.getVertical()) * (self.speed * Game.unitLength * deltaTime)
+        moveVec = Vector(Input.getHorizontal(), -Input.getVertical()).normalize() * (self.speed * Game.unitLength)
         self.transform.Translate(moveVec * deltaTime)

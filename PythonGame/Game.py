@@ -5,7 +5,9 @@ from TickedObject import TickedObject
 from Entities.Player.Player import Player
 from Transform import Transform
 from Vector import Vector
-from Entities.Enemies.BasicEnemy import BasicEnemy
+from Entities.ParticleSystem import ParticleSystem
+from Entities.ParticleSystem import ParticleSystemEmission
+import math
 
 def InstantiateObject(obj:TickedObject):
     global instanceNumbers
@@ -18,7 +20,7 @@ def DestroyObject(obj:TickedObject):
 
 objectsAlive = {}
 instanceNumbers = 0
-debug = True
+debug = False
 
 # pygame setup
 pygame.init()
@@ -40,10 +42,9 @@ objmngr.InstanceQueue.append(plr)
 objmngr.InstanceQueue.append(spawner)
 
 dt = 0
-unitScale = 35.0
-unitLength = 0
+unitLength = 50.0
 time = 0.0
-lastNum = 0
+
 while running:
     # poll for events
     # pygame.QUIT event means the user clicked X to close your window
@@ -59,15 +60,10 @@ while running:
         objectsAlive[obj].tick(dt)
     
     objmngr.tick(dt)
-    
-    if objectsAlive.__len__() != lastNum:
-        lastNum = objectsAlive.__len__()
-    
     # flip() the display to put your work on screen
     pygame.display.flip()
 
     dt = float(clock.tick(60)) / 1000.0 # limits FPS to 60
-    unitLength = 100.0 / dt
     time += dt
 
 pygame.quit()

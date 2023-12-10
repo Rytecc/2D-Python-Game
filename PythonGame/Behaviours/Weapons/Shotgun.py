@@ -8,16 +8,16 @@ import Input
 import pygame
 import Game
 
-class Basic(Weapon):
+class Shotgun(Weapon):
     def __init__(self, player:Player) -> None:
-        self.fireFrequency = 1.0 / WeaponStats.FIRERATE_BASIC
+        self.fireFrequency = 1.0 / WeaponStats.FIRERATE_SHOTGUN
         self.fireDelay = self.fireFrequency
         self.player = player
         super().__init__()
     
     def run(self, deltaTime):
         if Input.getKeyState(pygame.K_SPACE) == False:
-            self.fireDelay = self.fireFrequency
+            self.fireDelay = 0
             return
         
         if self.fireDelay > 0.0:
@@ -25,8 +25,11 @@ class Basic(Weapon):
             return
         
         shotPosition = self.player.transform.position + self.player.transform.getForward().normalize() * 25.0
-        shotDirection = self.player.transform.getForward().normalize()
-        Game.objmngr.InstanceQueue.append(Bullet(Game.screen, Transform(shotPosition, Vector(1.0, 1.0)), shotPosition, shotDirection, WeaponStats.SPEED_BULLET))
+
+        for x in range(-2, 3):
+            shotDirection = self.player.transform.getForward().rotateVector(45.0 * (x / 4.0)).normalize()
+            Game.objmngr.InstanceQueue.append(Bullet(Game.screen, Transform(shotPosition, Vector(1.0, 1.0)), shotPosition + shotDirection, shotDirection, WeaponStats.SPEED_BULLET))
+        
         self.fireDelay = self.fireFrequency
         super().run()
     

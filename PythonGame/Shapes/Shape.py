@@ -1,5 +1,6 @@
 import pygame
 from pygame.color import Color
+from Vector import Vector
 import math
 import Game
 import os
@@ -11,39 +12,21 @@ class Shape:
         self.shapeFile = f"{shapesPath}\\{shapeName}.shape"
         self.colorExpression = colorExpression
         shapeDataStream = open(self.shapeFile, "r")
+        
         self.rawShapeData = shapeDataStream.readlines()
-
-        self.pointCoords = []
+        self.pointArray = []
         for datum in self.rawShapeData:
             xy = datum.strip().split(',')
-            self.pointCoords.append([float(xy[0]), float(xy[1])])
+            self.pointArray.append(Vector(float(xy[0]), float(xy[1])))
 
-    # How can we incorporate rotation
+    def calculatePoint(self, point:Vector, center:Vector, nonUnitScale:float, zRotation:float) -> Vector:
+        radianAngle = math.radians(zRotation)
+        x = point.x * math.cos(radianAngle) - point.y * math.sin(radianAngle)
+        y = point.x * math.sin(radianAngle) + point.y * math.cos(radianAngle)
+        return center + Vector(x, y) * (nonUnitScale * Game.unitLength)
+
     def drawShape(self, screen, center, nonUnitScale, zRotation):
-        scale = nonUnitScale * Game.unitScale
-        for i in range(0, self.pointCoords.__len__() - 1):
-            pointAx = self.pointCoords[i][0] * scale
-            pointAy = self.pointCoords[i][1] * scale
-
-            pointBx = self.pointCoords[i + 1][0] * scale
-            pointBy = self.pointCoords[i + 1][1] * scale
-
-            #Convert pointCoords to polar coordinates
-            pointAPolarR = math.sqrt(pointAx * pointAx + pointAy * pointAy)
-            pointAPolarA = math.degrees(math.atan2(pointAy, pointAx))
-
-            pointBPolarR = math.sqrt(pointBx * pointBx + pointBy * pointBy)
-            pointBPolarA = math.degrees(math.atan2(pointBy, pointBx))
-
-            #Add angle to polar coordinates
-            pointAPolarA += zRotation
-            pointBPolarA += zRotation
-
-            #Revert back to cartesian coordinates
-            pointAx = Game.worldOrigin.x + center[0] + pointAPolarR * math.cos(math.radians(pointAPolarA))
-            pointAy = Game.worldOrigin.y + center[1] + pointAPolarR * math.sin(math.radians(pointAPolarA))
-
-            pointBx = center[0] + pointBPolarR * math.cos(math.radians(pointBPolarA))
-            pointBy = center[1] + pointBPolarR * math.sin(math.radians(pointBPolarA))
-
-            pygame.draw.aaline(screen, self.colorExpression(), pygame.Vector2(pointAx, pointAy), pygame.Vector2(pointBx, pointBy))
+        for i in range(0, self.pointArray.__len__() - 1):
+            aPoint = self.calculatePoint(self.pointArray[i], Vector(center[0], center[1]), nonUnitScale, zRotation)
+            bPoint = self.calculatePoint(self.pointArray[i + 1], Vector(center[0], center[1]), nonUnitScale, zRotation)
+            pygame.draw.aaline(screen, self.colorExpression(), [aPoint.x, aPoint.y], [bPoint.x, bPoint.y])

@@ -30,6 +30,9 @@ class Vector:
         return f"({self.x},{self.y})"
     
     def normalize(self):
+        if self.magnitude() == 0:
+            return self
+        
         return self.__div__(self.magnitude())
 
     def toArray(self) -> list[float]:
@@ -37,3 +40,10 @@ class Vector:
     
     def createUnitWIthAngle(self, angle):
         return Vector(math.cos(angle), math.sin(angle))
+    
+    def rotateVector(self, dA):
+        vPolarAngle = math.atan2(self.y, self.x)
+        vPolarRadius = self.magnitude()
+        vPolarAngle += math.radians(dA)
+        
+        return Vector(vPolarRadius * math.cos(vPolarAngle), vPolarRadius * math.sin(vPolarAngle))

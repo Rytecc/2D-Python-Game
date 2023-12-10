@@ -94,3 +94,6 @@ class ParticleSystem(TickedObject):
     def reset(self):
         self.timeLeft = 1.0 / self.emitSettings.emitRate
         self.particles.clear()
+        
+    def setRunning(self, running:bool):
+        self.isPlaying = running

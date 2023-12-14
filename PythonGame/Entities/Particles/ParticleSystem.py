@@ -8,15 +8,19 @@ import math
 import random
 import pygame
 import Game
+import random
+from Utility import Debug
 
 class Particle:
-    def __init__(self, spawnTime:float, originPoint:Vector, transform:Transform, positionFunction:Callable[[Transform, float], Vector], scaleFunction:Callable[[float], Vector], lifeTimeFunction:Callable[[float], float], colorExpression:Callable[[float], Color]) -> None:
+    def __init__(self, spawnTime:float, originPoint:Vector, transform:Transform, positionFunction:Callable[[Transform, float, float], Vector], scaleFunction:Callable[[float, float], Vector], lifeTimeFunction:Callable[[float], float], colorExpression:Callable[[float], Color]) -> None:
         self.transform = transform
 
         self.lifeTimeExpression:Callable[[], float] = lifeTimeFunction
-        self.posExpression:Callable[[Transform, float], Vector] = positionFunction
-        self.scaleExpression:Callable[[float], Vector] = scaleFunction
+        self.posExpression:Callable[[Transform, float, float], Vector] = positionFunction
+        self.scaleExpression:Callable[[float, float], Vector] = scaleFunction
         self.colorExpression:Callable[[float], Color] = colorExpression
+
+        self.noiseConstant = random.random()
         self.spawnTime = spawnTime
         self.origin = originPoint
 
@@ -31,13 +35,13 @@ class ParticleSystemEmission:
     def getEmitPosition(self, forwardVector:Vector) -> Vector:
         randMagnitude = random.random()
         randAngle = random.random()
-        vectorMagnitude = (self.innerRadius + (self.outerRadius - self.innerRadius)) * randMagnitude
+        vectorMagnitude = self.innerRadius + ((self.outerRadius - self.innerRadius) * randMagnitude)
         vectorAngle = Math.lerp(-self.sweepAngle, self.sweepAngle, randAngle)
         return (forwardVector * vectorMagnitude * Game.unitLength).rotateVector(vectorAngle)
     
 
 class ParticleSystem(TickedObject):
-    def __init__(self, screen, Transform:Transform, posFunction:Vector, scaleFunction:float, lifeTimeFunction:float, colorFunction:Color, isLocal:bool, emitSettings:ParticleSystemEmission):
+    def __init__(self, screen, Transform:Transform, posFunction:Vector, scaleFunction:float, lifeTimeFunction:float, colorFunction:Color, isLocal:bool, emitSettings:ParticleSystemEmission, debug=False):
         self.particles:list[Particle] = []
         self.posFunction = posFunction
         self.scaleFunction = scaleFunction
@@ -45,12 +49,13 @@ class ParticleSystem(TickedObject):
         self.colorFunction = colorFunction
         
         self.emitSettings = emitSettings
+        self.isDebug = debug
         self.isLocal = isLocal
         self.isPlaying = False
         
         self.timeLeft = 1.0 / emitSettings.emitRate
         super().__init__(screen, Transform)
-    
+
     def tick(self, deltaTime):
         if self.timeLeft > 0 and self.isPlaying:
             self.timeLeft -= deltaTime
@@ -68,24 +73,31 @@ class ParticleSystem(TickedObject):
                 i -= 1
                 continue
             
-            newPosition = (self.transform.position + currParticle.origin if self.isLocal else currParticle.origin) + currParticle.posExpression(currParticle.transform, timeAlive)
-            newScale = currParticle.scaleExpression(timeAlive)
+            newPosition = (self.transform.position + currParticle.origin if self.isLocal else currParticle.origin) + currParticle.posExpression(currParticle.transform, timeAlive, currParticle.noiseConstant)
+            newScale = currParticle.scaleExpression(timeAlive, currParticle.noiseConstant)
             currParticle.transform.setPosition(newPosition)
 
             rectPos = Vector(newPosition.x + newScale.x * 0.5, newPosition.y + newScale.y * 0.5)
             pygame.draw.rect(self.screen, currParticle.colorExpression(timeAlive), [rectPos.x, rectPos.y, newScale.x, newScale.y])
             i -= 1
+
+            if self.isDebug:
+                Debug.debugCircle(self.screen, self.transform.position + currParticle.transform.spawnPosition, 0.75)
         
         super().tick(deltaTime)
     
     def emit(self, amount:int):
         for i in range(0, amount):
             origin = self.emitSettings.getEmitPosition(self.transform.getForward())
-            if self.isLocal == False:
-                origin += self.transform.position
-            
             newTransform = Transform(Vector(0, 0), Vector(0, 0))
-            newTransform.setForward(origin.normalize())
+            
+            if self.isLocal == False:
+                newTransform.setForward(origin.normalize())
+                origin += self.transform.position
+            else:
+                newTransform.setForward(origin.normalize())
+            
+            
             self.particles.append(Particle(Game.time, origin, newTransform, self.posFunction, self.scaleFunction, self.lifeTimeFunction, self.colorFunction))
             
     def emitAtPosition():

@@ -1,13 +1,14 @@
 import pygame
-from Entities.Foundation.ObjectManager import ObjectManager
-from Entities.Foundation.EnemySpawner import EnemySpawner
+
 from TickedObject import TickedObject
-from Entities.Player.Player import Player
 from Transform import Transform
 from Vector import Vector
-from Entities.ParticleSystem import ParticleSystem
-from Entities.ParticleSystem import ParticleSystemEmission
-import math
+
+from Entities.Foundation.ObjectManager import ObjectManager
+from Entities.Foundation.EnemySpawner import EnemySpawner
+from Entities.Player.Player import Player
+
+from Entities.Powerups.Pickups.FirerateDrop import FirerateDrop
 
 def InstantiateObject(obj:TickedObject):
     global instanceNumbers
@@ -17,6 +18,7 @@ def InstantiateObject(obj:TickedObject):
 
 def DestroyObject(obj:TickedObject):
     del objectsAlive[obj.instanceID]
+
 
 objectsAlive = {}
 instanceNumbers = 0
@@ -44,6 +46,9 @@ objmngr.InstanceQueue.append(spawner)
 dt = 0
 unitLength = 50.0
 time = 0.0
+
+def spawnPowerUp(entity:TickedObject):
+    objmngr.InstanceQueue.append(FirerateDrop(screen, entity.transform.copy()))
 
 while running:
     # poll for events

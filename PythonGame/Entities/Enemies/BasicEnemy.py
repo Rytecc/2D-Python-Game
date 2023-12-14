@@ -5,7 +5,8 @@ from Shapes.Shape import Shape
 from pygame.color import Color
 from Utility import Physics
 import Entities.Enemies.EnemyStats as EnemyStats
-from Entities import ParticleSystem
+import Entities.Particles.ParticleSystem as ParticleSystem
+import random
 import Game
 import math
 
@@ -37,6 +38,9 @@ class BasicEnemy(TickedObject):
 
     def tick(self, deltaTime):
         if self.currentHealth <= 0.0 or self.target.disposed:
+            if random.random() > 0.9:
+                Game.spawnPowerUp(self)
+            
             self.dispose()
             return
 

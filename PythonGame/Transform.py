@@ -5,6 +5,7 @@ import math
 
 class Transform:
     def __init__(self, pVector:Vector, sVector:Vector):
+        self.spawnPosition = pVector
         self.position = pVector
         self.scale = sVector
         self.zAngle = 0

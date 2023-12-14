@@ -47,3 +47,18 @@ class Vector:
         vPolarAngle += math.radians(dA)
         
         return Vector(vPolarRadius * math.cos(vPolarAngle), vPolarRadius * math.sin(vPolarAngle))
+    
+    def one(self):
+        return Vector(1.0, 1.0)
+    
+    def right(self):
+        return Vector(1.0, 0.0)
+    
+    def left(self):
+        return Vector(-1.0, 0.0)
+    
+    def up(self):
+        return Vector(0, 1)
+    
+    def down(self):
+        return Vector(0, -1)

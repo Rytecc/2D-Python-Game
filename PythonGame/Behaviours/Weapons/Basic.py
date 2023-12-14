@@ -21,14 +21,14 @@ class Basic(Weapon):
             return
         
         if self.fireDelay > 0.0:
-            self.fireDelay -= deltaTime
+            self.fireDelay -= deltaTime * self.clockSpeed
             return
         
         shotPosition = self.player.transform.position + self.player.transform.getForward().normalize() * 25.0
         shotDirection = self.player.transform.getForward().normalize()
         Game.objmngr.InstanceQueue.append(Bullet(Game.screen, Transform(shotPosition, Vector(1.0, 1.0)), shotPosition, shotDirection, WeaponStats.SPEED_BULLET))
         self.fireDelay = self.fireFrequency
-        super().run()
+        super().run(deltaTime)
     
     def reset():
         super().reset()

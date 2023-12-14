@@ -5,10 +5,11 @@ from Behaviours.Movement import Movement
 from Behaviours.Rotator import Rotator
 from Shapes.Shape import Shape
 from pygame.color import Color
-from Entities.ParticleSystem import ParticleSystem
-from Entities.ParticleSystem import ParticleSystemEmission
+import Entities.Particles.ParticleSystem as ParticleSystem
+import pygame
 import Game
 import math
+import Input
 
 PLAYER_SPEED = 2.5
 
@@ -29,18 +30,21 @@ class Player(TickedObject):
         self.addTag("Player")
         
         self.weapon = Shotgun(self)
-        self.addBuff(FireRateBuff(5.0))
         
-        lifeTimeFunc = lambda tA : 2.0
-        posFunc = lambda tr, tA: tr.getForward() * (math.sinh(math.pow(tA/lifeTimeFunc(1.0),3)) * 2.5 * Game.unitLength)
-        scaleFunc = lambda tA : Vector(0.15, 0.15) * ((lifeTimeFunc(1.0) - tA) / lifeTimeFunc(1.0)) * Game.unitLength
-        colorFunc = lambda tA : cExpression()
+        auraLifeTimeFunc = lambda tA : 2.0
+        auraPosFunc = lambda tr, tA, nC : tr.getForward() * (math.sinh(math.pow(tA/auraLifeTimeFunc(1.0),3)) * 2.5 * Game.unitLength)
+        auraScaleFunc = lambda tA, nC : Vector(0.15, 0.15) * ((auraLifeTimeFunc(1.0) - tA) / auraLifeTimeFunc(1.0)) * Game.unitLength
+        auraColorFunc = lambda tA : cExpression()
         
-        auraSettings = ParticleSystemEmission(0, 1.0, 180.0, 100.0)
-        self.aura = ParticleSystem(screen, self.transform.copy(), posFunc, scaleFunc, lifeTimeFunc, colorFunc, True, auraSettings)
-        
-        
-        
+        auraSettings = ParticleSystem.ParticleSystemEmission(0, 1.0, 180.0, 100.0)
+        self.aura = ParticleSystem.ParticleSystem(screen, self.transform.copy(), auraPosFunc, auraScaleFunc, auraLifeTimeFunc, auraColorFunc, True, auraSettings)
+
+        expLifeTimeFunc = lambda tA : 0.5
+        expPosFunc = lambda tr, tA, nC : tr.getForward() * Game.unitLength * 2.5 * (tA / expLifeTimeFunc(1.0)) * (1 + nC)
+        expScaleFunc = lambda tA, nC : Vector(0.25, 0.25) * ((expLifeTimeFunc(1.0) - tA) / expLifeTimeFunc(1.0)) * Game.unitLength
+        auraColorFunc = lambda tA : cExpression()
+        self.explosion = ParticleSystem.ParticleSystem(screen, self.transform.copy(), expPosFunc, expScaleFunc, expLifeTimeFunc, auraColorFunc, False, auraSettings, False)
+
     def setShotPointTransform(self):
         posVec = self.transform.position + (self.transform.getForward() * 0.5 * Game.unitLength)
         self.shotPoint = posVec
@@ -66,8 +70,11 @@ class Player(TickedObject):
             
         # Run Aura Particle System based on buffs
         self.aura.setRunning(False if self.buffs.__len__() == 0 else True)
+        self.explosion.setRunning(False)
+
         self.aura.tick(deltaTime)
-        
+        self.explosion.tick(deltaTime)
+
         # Determine values for player scale for pulse effect with respect to health
         strobeSpeed = self.maxHealth / (0.05 if self.currentHealth <= 0.0 else self.currentHealth)
         scaleExpression = 1.5 + (math.sin(strobeSpeed * Game.time) * 0.1)
@@ -86,6 +93,8 @@ class Player(TickedObject):
             self.currentHealth += args
         elif type == "Damage":
             self.currentHealth -= args
+        elif type == "Powerup":
+            self.addBuff(args)
         
         if self.currentHealth <= 0:
             self.dispose()
@@ -93,10 +102,9 @@ class Player(TickedObject):
         return super().interact(args, type)
     
     def addBuff(self, newBuff):
+        self.explosion.emit(50)
         self.buffs.append(newBuff)
-        
-        
-from Entities.Powerups.FirerateBuff import FireRateBuff
+
 from Entities.Powerups.Powerup import Buff
 
 from Behaviours.Weapons.Shotgun import Shotgun

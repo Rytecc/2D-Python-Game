@@ -4,6 +4,7 @@ from Entities.Enemies.BasicEnemy import BasicEnemy
 from Vector import Vector
 import Game
 import random
+
 class EnemySpawner(TickedObject):
     def __init__(self, screen, Transform:Transform, spawnRate:float):
         self.maxDelay = 1.0 / spawnRate

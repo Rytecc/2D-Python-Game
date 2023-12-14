@@ -1,6 +1,7 @@
 import abc
 from Transform import Transform
 import Game
+
 class TickedObject:
     def __init__(self, screen, Transform:Transform):
         self.tags:list[str] = ["default"]
